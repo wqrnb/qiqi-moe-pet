@@ -13,3 +13,7 @@
 
 - `index.html`：网页布局、交互和计分逻辑。
 - `assets/qiqi-spritesheet.webp`：淇淇桌宠动画精灵图。
+
+## 在线体验
+
+推送到 `main` 后，GitHub Actions 会自动部署到 GitHub Pages。
