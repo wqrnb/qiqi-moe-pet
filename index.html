@@ -1,0 +1,739 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f7edf1">
+  <meta name="description" content="轻轻敲敲淇淇的脑袋，让今天的萌值不断增加。">
+  <title>敲敲淇淇 · 萌值小窝</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #482f3f;
+      --muted: #9b7c8f;
+      --rose: #d46f91;
+      --rose-deep: #a9476e;
+      --pink: #f5d9e3;
+      --paper: #fffaf8;
+      --lavender: #ece5f6;
+      --line: rgba(130, 89, 113, .12);
+      --shadow: 0 22px 70px rgba(105, 63, 90, .13);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 9% 12%, rgba(246, 214, 226, .72) 0 2px, transparent 3px),
+        radial-gradient(circle at 90% 27%, rgba(214, 200, 237, .66) 0 3px, transparent 4px),
+        radial-gradient(ellipse at 16% 85%, rgba(248, 222, 228, .58), transparent 34%),
+        linear-gradient(142deg, #fbf4f2 0%, #f7f0f7 50%, #f7eef2 100%);
+      font-family: ui-rounded, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+    }
+
+    button { font: inherit; }
+    .page {
+      width: min(1120px, 100%);
+      margin: 0 auto;
+      padding: 24px 28px 30px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 46px;
+      margin-bottom: 34px;
+    }
+    .brand { display: flex; align-items: center; gap: 11px; font-weight: 800; letter-spacing: .03em; }
+    .brand-mark {
+      display: grid;
+      width: 38px;
+      height: 38px;
+      place-items: center;
+      border: 1px solid rgba(169, 71, 110, .13);
+      border-radius: 13px;
+      background: linear-gradient(145deg, #fff, #fae4ec);
+      box-shadow: 0 5px 14px rgba(169, 71, 110, .12);
+      font-size: 20px;
+    }
+    .brand small { display: block; margin-top: 2px; color: var(--muted); font-size: 10px; letter-spacing: .17em; }
+    .save-state {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 8px 12px;
+      border: 1px solid rgba(129, 161, 137, .2);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, .58);
+      color: #718b75;
+      font-size: 12px;
+    }
+    .save-state::before { width: 7px; height: 7px; border-radius: 50%; background: #7ab282; content: ""; }
+
+    .intro { margin-bottom: 30px; }
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 11px;
+      color: var(--rose-deep);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+    }
+    .eyebrow::before { width: 22px; height: 1px; background: #dba2b7; content: ""; }
+    h1 { margin: 0; font-size: clamp(28px, 4vw, 42px); line-height: 1.18; letter-spacing: -.045em; }
+    h1 em { color: var(--rose-deep); font-style: normal; }
+    .subtitle { margin: 12px 0 0; color: var(--muted); font-size: 14px; line-height: 1.75; }
+
+    .layout { display: grid; grid-template-columns: minmax(0, 1.16fr) minmax(300px, .84fr); gap: 21px; align-items: stretch; }
+    .card {
+      border: 1px solid rgba(255, 255, 255, .82);
+      border-radius: 28px;
+      background: rgba(255, 251, 250, .81);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(14px);
+    }
+    .pet-card {
+      position: relative;
+      display: flex;
+      min-height: 510px;
+      flex-direction: column;
+      align-items: center;
+      overflow: hidden;
+      padding: 24px 24px 25px;
+      background:
+        radial-gradient(ellipse at 50% 49%, rgba(255, 255, 255, .95) 0 18%, rgba(255, 255, 255, 0) 55%),
+        linear-gradient(155deg, rgba(255,255,255,.92), rgba(250,232,238,.75));
+    }
+    .pet-card::before, .pet-card::after {
+      position: absolute;
+      width: 240px;
+      height: 240px;
+      border: 1px solid rgba(213, 151, 176, .16);
+      border-radius: 50%;
+      content: "";
+      pointer-events: none;
+    }
+    .pet-card::before { top: 87px; left: 50%; transform: translateX(-50%); }
+    .pet-card::after { top: 107px; left: 50%; width: 198px; height: 198px; transform: translateX(-50%); }
+    .pet-label {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      width: 100%;
+      align-items: center;
+      justify-content: space-between;
+      color: #9d7b8e;
+      font-size: 12px;
+    }
+    .pet-label strong { color: #67465a; font-size: 13px; }
+    #actionName { color: #9b7c8f; }
+    .heart-dot { color: var(--rose); font-size: 17px; }
+    .speech-bubble {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      min-height: 42px;
+      width: min(100%, 318px);
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin: 10px auto 0;
+      padding: 8px 14px;
+      border: 1px solid rgba(205, 151, 174, .21);
+      border-radius: 15px;
+      background: rgba(255, 255, 255, .83);
+      box-shadow: 0 6px 18px rgba(142, 93, 119, .07);
+      color: #805e73;
+      font-size: 12px;
+      line-height: 1.55;
+      text-align: center;
+    }
+    .speech-mark { color: #d28ba7; font-family: Georgia, serif; font-size: 23px; font-weight: 900; line-height: .7; }
+    .speech-bubble.pop { animation: speech-pop 280ms cubic-bezier(.2,.9,.3,1.2); }
+    .pet-stage {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      width: min(100%, 370px);
+      flex: 1;
+      min-height: 330px;
+      place-items: center;
+      margin-top: 7px;
+      isolation: isolate;
+    }
+    .pet-glow {
+      position: absolute;
+      bottom: 21px;
+      width: 205px;
+      height: 34px;
+      border-radius: 50%;
+      background: rgba(195, 128, 157, .17);
+      filter: blur(8px);
+    }
+    .sprite-wrap {
+      position: relative;
+      width: 288px;
+      height: 312px;
+      transform-origin: 50% 86%;
+    }
+    .sprite-art {
+      position: absolute;
+      inset: 0;
+      background-image: url("./assets/qiqi-spritesheet.webp");
+      background-repeat: no-repeat;
+      background-size: 800% 1100%;
+      animation: qiqi-idle 1000ms steps(1, end) infinite;
+      image-rendering: auto;
+    }
+    .head-hit {
+      position: absolute;
+      z-index: 3;
+      top: 1%;
+      left: 50%;
+      width: 57%;
+      height: 49%;
+      padding: 0;
+      border: 0;
+      border-radius: 48% 48% 42% 42%;
+      background: transparent;
+      cursor: pointer;
+      transform: translateX(-50%);
+      -webkit-tap-highlight-color: transparent;
+    }
+    .head-hit:focus-visible { outline: 3px solid rgba(190, 89, 130, .65); outline-offset: 3px; }
+    .head-hit:hover { background: rgba(255, 244, 249, .10); }
+    .bonk-mark {
+      position: absolute;
+      z-index: 4;
+      top: 7px;
+      right: 12px;
+      color: #d56d92;
+      font-size: 25px;
+      font-weight: 900;
+      opacity: 0;
+      transform: translateY(9px) scale(.65) rotate(-13deg);
+      pointer-events: none;
+    }
+    .pet-stage[data-action="wave"] .sprite-wrap { animation: pet-sway 700ms ease both; }
+    .pet-stage[data-action="wait"] .sprite-wrap { animation: pet-wait 1010ms ease both; }
+    .pet-stage[data-action="jump"] .sprite-wrap { animation: qiqi-bounce 840ms cubic-bezier(.3,.1,.3,1) both; }
+    .pet-stage[data-action="review"] .sprite-wrap { animation: pet-nod 1030ms ease both; }
+    .sprite-art.reaction-wave { animation: qiqi-wave 700ms steps(1, end) both; }
+    .sprite-art.reaction-wait { animation: qiqi-wait 1010ms steps(1, end) both; }
+    .sprite-art.reaction-jump { animation: qiqi-jump 840ms steps(1, end) both; }
+    .sprite-art.reaction-review { animation: qiqi-review 1030ms steps(1, end) both; }
+    .pet-stage.is-hit .bonk-mark { animation: bonk-pop 640ms ease-out both; }
+    .pet-shadow { transition: transform .32s ease, opacity .32s ease; }
+    .pet-stage.is-hit .pet-glow { transform: scaleX(.82); opacity: .82; }
+    .under-pet { position: relative; z-index: 1; margin: -2px 0 4px; color: #9b7c8f; font-size: 12px; }
+    .tap-cta {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      min-height: 58px;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: min(100%, 294px);
+      margin-top: 9px;
+      border: 0;
+      border-radius: 19px;
+      background: linear-gradient(135deg, #d97296, #bd557f);
+      box-shadow: 0 12px 25px rgba(189, 85, 127, .25), inset 0 1px 0 rgba(255,255,255,.35);
+      color: white;
+      cursor: pointer;
+      font-weight: 800;
+      letter-spacing: .03em;
+      transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
+    }
+    .tap-cta:hover { filter: brightness(1.04); box-shadow: 0 15px 29px rgba(189, 85, 127, .3); transform: translateY(-2px); }
+    .tap-cta:active { box-shadow: 0 6px 14px rgba(189, 85, 127, .2); transform: translateY(1px) scale(.985); }
+    .tap-cta:focus-visible, .reset:focus-visible { outline: 3px solid rgba(190, 89, 130, .55); outline-offset: 3px; }
+    .tap-cta span:first-child { font-size: 19px; }
+    .tap-cta small { font-size: 11px; font-weight: 600; opacity: .82; }
+
+    .side { display: grid; grid-template-rows: auto 1fr; gap: 18px; }
+    .score-card { padding: 25px 26px 23px; }
+    .section-kicker { color: var(--muted); font-size: 12px; font-weight: 700; letter-spacing: .08em; }
+    .score-row { display: flex; align-items: flex-end; justify-content: space-between; gap: 14px; margin-top: 11px; }
+    .score-total { min-width: 0; font-size: clamp(37px, 5vw, 54px); font-weight: 850; line-height: 1; letter-spacing: -.055em; overflow-wrap: anywhere; }
+    .score-unit { flex: 0 0 auto; padding-bottom: 4px; color: #af8196; font-size: 13px; }
+    .score-divider { height: 1px; margin: 21px 0 17px; background: var(--line); }
+    .boost-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .boost-label { color: var(--muted); font-size: 13px; }
+    .boost-pill { padding: 8px 12px; border: 1px solid rgba(195, 110, 145, .15); border-radius: 12px; background: #fff0f4; color: var(--rose-deep); font-size: 14px; font-weight: 850; }
+    .reward {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 15px;
+      padding: 13px 14px;
+      border-radius: 14px;
+      background: linear-gradient(100deg, #faf0f3, #f4eef8);
+    }
+    .reward span:first-child { color: #937488; font-size: 12px; }
+    .reward strong { color: #9f446c; font-size: 16px; }
+    .combo-line { display: flex; align-items: center; justify-content: space-between; margin-top: 14px; color: var(--muted); font-size: 11px; }
+    .combo-track { height: 5px; margin-top: 7px; overflow: hidden; border-radius: 99px; background: #f0e5ec; }
+    .combo-fill { width: 0; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #e6a3bc, #ca668d); transition: width .1s linear; }
+    .rule-card { padding: 22px 25px; background: rgba(255, 250, 251, .72); }
+    .rule-head { display: flex; align-items: center; gap: 9px; margin-bottom: 13px; font-size: 14px; font-weight: 850; }
+    .rule-head span { display: grid; width: 27px; height: 27px; place-items: center; border-radius: 9px; background: #f7e5ec; font-size: 14px; }
+    .rule-copy { margin: 0; color: #907588; font-size: 12px; line-height: 1.8; }
+    .rule-copy strong { color: #9f446c; }
+    .steps { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 16px; }
+    .step { padding: 7px 10px; border: 1px solid rgba(174, 125, 150, .14); border-radius: 999px; background: #fff; color: #916d83; font-size: 11px; }
+    .step b { color: #a2466e; }
+    .side-note { display: flex; align-items: center; justify-content: space-between; margin-top: 19px; padding-top: 15px; border-top: 1px solid var(--line); color: #a28a9a; font-size: 11px; }
+    .reset { padding: 5px 0 5px 10px; border: 0; background: transparent; color: #a07b8f; cursor: pointer; font-size: 11px; }
+    .reset:hover { color: #a9476e; text-decoration: underline; }
+    .toast {
+      position: fixed;
+      z-index: 10;
+      bottom: 27px;
+      left: 50%;
+      max-width: calc(100vw - 30px);
+      padding: 11px 16px;
+      border: 1px solid rgba(255,255,255,.8);
+      border-radius: 999px;
+      background: rgba(72, 47, 63, .91);
+      box-shadow: 0 12px 30px rgba(72, 47, 63, .18);
+      color: #fff8fb;
+      font-size: 13px;
+      opacity: 0;
+      pointer-events: none;
+      transform: translate(-50%, 10px);
+      transition: opacity .2s ease, transform .2s ease;
+    }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+    .float-reward {
+      position: absolute;
+      z-index: 5;
+      top: 4%;
+      left: 50%;
+      color: #b44873;
+      font-size: clamp(17px, 2.3vw, 22px);
+      font-weight: 900;
+      text-shadow: 0 2px 0 #fff, 0 0 15px rgba(255,255,255,.9);
+      white-space: nowrap;
+      pointer-events: none;
+      animation: float-up 900ms ease-out forwards;
+    }
+    .float-reward.critical { color: #d34878; font-size: clamp(21px, 3vw, 28px); }
+    .footer { margin-top: 24px; color: #ad95a4; font-size: 11px; text-align: center; }
+
+    @keyframes qiqi-idle {
+      0%, 27.9% { background-position: 0% 0%; }
+      28%, 38.9% { background-position: 14.2857% 0%; }
+      39%, 49.9% { background-position: 28.5714% 0%; }
+      50%, 63.9% { background-position: 42.8571% 0%; }
+      64%, 77.9% { background-position: 57.1429% 0%; }
+      78%, 99.9% { background-position: 71.4286% 0%; }
+      100% { background-position: 0% 0%; }
+    }
+    @keyframes qiqi-jump {
+      0%, 16.6% { background-position: 0% 40%; }
+      16.7%, 33.2% { background-position: 14.2857% 40%; }
+      33.3%, 49.9% { background-position: 28.5714% 40%; }
+      50%, 66.5% { background-position: 42.8571% 40%; }
+      66.6%, 100% { background-position: 57.1429% 40%; }
+    }
+    @keyframes qiqi-wave {
+      0%, 19.9% { background-position: 0% 30%; }
+      20%, 39.9% { background-position: 14.2857% 30%; }
+      40%, 59.9% { background-position: 28.5714% 30%; }
+      60%, 100% { background-position: 42.8571% 30%; }
+    }
+    @keyframes qiqi-wait {
+      0%, 14.8% { background-position: 0% 60%; }
+      14.9%, 29.6% { background-position: 14.2857% 60%; }
+      29.7%, 44.4% { background-position: 28.5714% 60%; }
+      44.5%, 59.2% { background-position: 42.8571% 60%; }
+      59.3%, 74% { background-position: 57.1429% 60%; }
+      74.1%, 100% { background-position: 71.4286% 60%; }
+    }
+    @keyframes qiqi-review {
+      0%, 14.5% { background-position: 0% 80%; }
+      14.6%, 29.1% { background-position: 14.2857% 80%; }
+      29.2%, 43.7% { background-position: 28.5714% 80%; }
+      43.8%, 58.3% { background-position: 42.8571% 80%; }
+      58.4%, 72.9% { background-position: 57.1429% 80%; }
+      73%, 100% { background-position: 71.4286% 80%; }
+    }
+    @keyframes qiqi-bounce {
+      0% { transform: translateY(0) scale(1); }
+      16% { transform: translateY(9px) scale(1.03,.96) rotate(-2deg); }
+      38% { transform: translateY(-22px) scale(.98,1.04) rotate(2deg); }
+      61% { transform: translateY(-13px) scale(1.01,.99) rotate(-1deg); }
+      82% { transform: translateY(3px) scale(1.02,.97); }
+      100% { transform: translateY(0) scale(1); }
+    }
+    @keyframes pet-sway {
+      0%, 100% { transform: rotate(0); }
+      28% { transform: rotate(-3deg) translateY(-2px); }
+      58% { transform: rotate(2deg); }
+    }
+    @keyframes pet-wait {
+      0%, 100% { transform: translateY(0); }
+      34% { transform: translateY(3px) scale(.99,1.01); }
+      68% { transform: translateY(-2px); }
+    }
+    @keyframes pet-nod {
+      0%, 100% { transform: rotate(0); }
+      30% { transform: rotate(2deg) translateY(-2px); }
+      60% { transform: rotate(-2deg); }
+    }
+    @keyframes speech-pop {
+      0% { opacity: .55; transform: translateY(4px) scale(.97); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    @keyframes bonk-pop {
+      0% { opacity: 0; transform: translateY(10px) scale(.65) rotate(-13deg); }
+      21% { opacity: 1; transform: translateY(0) scale(1.13) rotate(7deg); }
+      60% { opacity: 1; transform: translateY(-8px) scale(1) rotate(-5deg); }
+      100% { opacity: 0; transform: translateY(-20px) scale(.9) rotate(0); }
+    }
+    @keyframes float-up {
+      0% { opacity: 0; transform: translate(-50%, 18px) scale(.82); }
+      18% { opacity: 1; transform: translate(-50%, 0) scale(1.08); }
+      72% { opacity: 1; transform: translate(-50%, -44px) scale(1); }
+      100% { opacity: 0; transform: translate(-50%, -66px) scale(.96); }
+    }
+
+    @media (max-width: 820px) {
+      .page { padding: 20px 20px 25px; }
+      .topbar { margin-bottom: 26px; }
+      .layout { grid-template-columns: minmax(0,1fr); }
+      .pet-card { min-height: 470px; }
+      .side { grid-template-columns: minmax(0,1fr) minmax(0,1fr); grid-template-rows: auto; align-items: stretch; }
+      .score-card, .rule-card { padding: 21px; }
+      .score-total { font-size: clamp(35px, 8vw, 50px); }
+    }
+    @media (max-width: 560px) {
+      .page { padding: 17px 14px 22px; }
+      .topbar { margin-bottom: 24px; }
+      .brand-mark { width: 35px; height: 35px; }
+      .save-state { padding: 7px 10px; font-size: 10px; }
+      .intro { margin-bottom: 22px; }
+      .subtitle { font-size: 13px; }
+      .layout { gap: 14px; }
+      .pet-card { min-height: 430px; padding: 20px 17px; border-radius: 24px; }
+      .speech-bubble { min-height: 40px; margin-top: 8px; padding: 7px 10px; }
+      .pet-card::before { top: 73px; width: 218px; height: 218px; }
+      .pet-card::after { top: 94px; width: 178px; height: 178px; }
+      .pet-stage { min-height: 287px; margin-top: 5px; }
+      .sprite-wrap { width: 250px; height: 271px; }
+      .pet-glow { bottom: 15px; width: 178px; }
+      .head-hit { width: 59%; height: 49%; }
+      .tap-cta { min-height: 54px; border-radius: 17px; }
+      .side { grid-template-columns: minmax(0,1fr); gap: 13px; }
+      .score-card, .rule-card { padding: 21px; border-radius: 22px; }
+      .score-total { font-size: clamp(36px, 11vw, 49px); }
+      .footer { margin-top: 18px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
+      .sprite-art { background-position: 0% 0%; animation: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">♡</span>
+        <span>淇淇的萌值小窝<small>QIQI'S LITTLE MOE CORNER</small></span>
+      </div>
+      <div class="save-state">记录自动保存</div>
+    </header>
+
+    <section class="intro" aria-labelledby="page-title">
+      <div class="eyebrow">今日份的可爱补给</div>
+      <h1 id="page-title">敲敲淇淇，<em>萌值加满。</em></h1>
+      <p class="subtitle">轻点她的脑袋，看她挥手、点头，偶尔开心地跳一下。连敲越多，萌值涨得越快。</p>
+    </section>
+
+    <section class="layout" aria-label="淇淇萌值敲击区">
+      <div class="card pet-card">
+        <div class="pet-label">
+          <span><strong>淇淇</strong> · <span id="actionName">安静待机中</span></span>
+          <span class="heart-dot" aria-hidden="true">♥</span>
+        </div>
+        <div class="speech-bubble" id="speechBubble" role="status" aria-live="polite">
+          <span class="speech-mark" aria-hidden="true">“</span>
+          <span id="speechText">今天也来敲敲我吗？我准备好啦～</span>
+        </div>
+        <div class="pet-stage" id="petStage">
+          <div class="pet-glow"></div>
+          <div class="sprite-wrap">
+            <div class="sprite-art" role="img" aria-label="淇淇：黑长发、圆框眼镜、粉白女仆裙和兔耳发饰"></div>
+            <button class="head-hit" id="headHit" type="button" aria-label="敲一下淇淇的脑袋，增加萌值" title="轻点淇淇的脑袋"></button>
+            <span class="bonk-mark" id="bonkMark" aria-hidden="true">啵！</span>
+          </div>
+          <p class="under-pet">轻点脑袋，看看淇淇会怎么回应</p>
+        </div>
+        <button class="tap-cta" id="tapButton" type="button">
+          <span aria-hidden="true">✦</span>
+          <span>敲一下 <small id="tapRewardPreview">+1 萌值</small></span>
+        </button>
+      </div>
+
+      <div class="side">
+        <section class="card score-card" aria-labelledby="score-heading">
+          <div class="section-kicker" id="score-heading">累计萌值</div>
+          <div class="score-row">
+            <strong class="score-total" id="scoreTotal" aria-live="polite">0</strong>
+            <span class="score-unit">萌值</span>
+          </div>
+          <div class="score-divider"></div>
+          <div class="boost-row">
+            <span class="boost-label">当前连敲倍率</span>
+            <span class="boost-pill" id="multiplier">×1</span>
+          </div>
+          <div class="reward">
+            <span>这一下增加</span>
+            <strong id="rewardValue">+1 萌值</strong>
+          </div>
+          <div class="combo-line">
+            <span id="comboStatus">准备好就敲敲淇淇</span>
+            <span id="comboCount">连敲 0 次</span>
+          </div>
+          <div class="combo-track" aria-hidden="true"><div class="combo-fill" id="comboFill"></div></div>
+        </section>
+
+        <section class="card rule-card" aria-labelledby="rule-heading">
+          <div class="rule-head" id="rule-heading"><span aria-hidden="true">✧</span>连敲规则</div>
+          <p class="rule-copy">
+            每一下连敲，倍率都再乘 <strong>10</strong>。第 1 下 <strong>+1</strong>，
+            第 2 下 <strong>+10</strong>，第 3 下倍率到 <strong>×100</strong>、增加 <strong>1,000</strong>；
+            后面继续涨。停一会儿，下一轮从 +1 开始。
+          </p>
+          <div class="steps" aria-label="前三次连敲的萌值奖励">
+            <span class="step">第 1 下 <b>+1</b></span>
+            <span class="step">第 2 下 <b>+10</b></span>
+            <span class="step">第 3 下 <b>+1,000</b></span>
+          </div>
+          <div class="side-note">
+            <span>数字太大时自动换成万、亿、兆、京</span>
+            <button class="reset" id="resetButton" type="button">清空记录</button>
+          </div>
+        </section>
+      </div>
+    </section>
+    <footer class="footer">给淇淇的每一下轻敲，都是一点点喜欢。</footer>
+  </main>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    (function () {
+      "use strict";
+      var STORAGE_KEY = "qiqi-moe-total-v1";
+      var COMBO_WINDOW = 1800;
+      var state = { total: 0n, combo: 0, lastReward: 1n };
+      var scoreTotal = document.getElementById("scoreTotal");
+      var multiplier = document.getElementById("multiplier");
+      var rewardValue = document.getElementById("rewardValue");
+      var comboStatus = document.getElementById("comboStatus");
+      var comboCount = document.getElementById("comboCount");
+      var comboFill = document.getElementById("comboFill");
+      var tapRewardPreview = document.getElementById("tapRewardPreview");
+      var petStage = document.getElementById("petStage");
+      var spriteArt = document.querySelector(".sprite-art");
+      var speechBubble = document.getElementById("speechBubble");
+      var speechText = document.getElementById("speechText");
+      var actionName = document.getElementById("actionName");
+      var bonkMark = document.getElementById("bonkMark");
+      var toast = document.getElementById("toast");
+      var lastTapAt = 0;
+      var fillTimer = 0;
+      var hitTimer = 0;
+      var poseTimer = 0;
+      var idleDialogueTimer = 0;
+      var toastTimer = 0;
+      var idleDialogueIndex = 0;
+      var idleLines = ["我把兔耳朵竖起来等你啦。", "要不要再陪我敲几下？", "今天也想收集一点点可爱。"];
+      var reactions = [
+        { key: "wave", label: "开心挥挥手", mark: "嗨！", duration: 700, lines: ["你来啦！我等你好久啦～", "轻轻一下，我收到啦！", "今天也一起玩吧～"] },
+        { key: "wait", label: "乖乖等你", mark: "嗯？", duration: 1010, lines: ["第二下收到！倍率变成十倍啦～", "我抱好脑袋，准备接住下一下！", "还想继续吗？我在这里等你～"] },
+        { key: "jump", label: "开心蹦一下", mark: "哇！", duration: 840, lines: ["哇！第三下 ×100，送你 1,000 萌值！", "这一下好厉害，我开心地蹦起来啦！", "×100 的萌值冲过来啦，接住！"] },
+        { key: "review", label: "认真接住萌值", mark: "叮！", duration: 1030, lines: ["这份萌值我会好好收起来～", "让我认真数数，已经涨好多啦！", "收到！我给你比一个小爱心。"] }
+      ];
+
+      function readTotal() {
+        try {
+          var saved = localStorage.getItem(STORAGE_KEY);
+          if (saved && /^\d+$/.test(saved)) state.total = BigInt(saved);
+        } catch (error) {
+          state.total = 0n;
+        }
+      }
+
+      function saveTotal() {
+        try { localStorage.setItem(STORAGE_KEY, state.total.toString()); }
+        catch (error) { showToast("浏览器暂时无法保存记录"); }
+      }
+
+      function superscript(value) {
+        var map = { "0":"⁰", "1":"¹", "2":"²", "3":"³", "4":"⁴", "5":"⁵", "6":"⁶", "7":"⁷", "8":"⁸", "9":"⁹" };
+        return String(value).split("").map(function (digit) { return map[digit] || digit; }).join("");
+      }
+
+      function formatValue(value) {
+        var units = ["", "万", "亿", "兆", "京", "垓", "秭", "穰", "沟", "涧", "正", "载"];
+        var digits = value.toString();
+        if (digits.length <= 4) return value.toLocaleString("zh-CN");
+        var group = Math.floor((digits.length - 1) / 4);
+        if (group < units.length) {
+          var scale = 10n ** BigInt(group * 4);
+          var whole = value / scale;
+          var fraction = (value % scale) * 100n / scale;
+          var decimals = fraction.toString().padStart(2, "0").replace(/0+$/, "");
+          return whole.toString() + (decimals ? "." + decimals : "") + units[group];
+        }
+        var significant = digits.slice(0, 3);
+        var mantissa = significant[0] + (significant.length > 1 ? "." + significant.slice(1).replace(/0+$/, "") : "");
+        return mantissa + "×10" + superscript(digits.length - 1);
+      }
+
+      function rewardFor(combo) {
+        if (combo === 1) return 1n;
+        if (combo === 2) return 10n;
+        return 10n ** BigInt(combo);
+      }
+
+      function multiplierFor(combo) {
+        return 10n ** BigInt(Math.max(0, combo - 1));
+      }
+
+      function render() {
+        scoreTotal.textContent = formatValue(state.total);
+        multiplier.textContent = "×" + formatValue(multiplierFor(Math.max(1, state.combo)));
+        rewardValue.textContent = "+" + formatValue(state.lastReward) + " 萌值";
+        tapRewardPreview.textContent = "+" + formatValue(rewardFor(state.combo + 1)) + " 萌值";
+        comboCount.textContent = "连敲 " + state.combo + " 次";
+        if (state.combo === 0) comboStatus.textContent = "准备好就敲敲淇淇";
+        else if (state.combo === 1) comboStatus.textContent = "第一下，淇淇收到啦";
+        else if (state.combo === 2) comboStatus.textContent = "连起来了，倍率 ×10";
+        else if (state.combo === 3) comboStatus.textContent = "萌值暴击！倍率 ×100";
+        else comboStatus.textContent = "连击不停，萌值飞涨";
+      }
+
+      function showToast(message) {
+        toast.textContent = message;
+        toast.classList.add("show");
+        window.clearTimeout(toastTimer);
+        toastTimer = window.setTimeout(function () { toast.classList.remove("show"); }, 1900);
+      }
+
+      function showDialogue(message) {
+        speechText.textContent = message;
+        speechBubble.classList.remove("pop");
+        void speechBubble.offsetWidth;
+        speechBubble.classList.add("pop");
+      }
+
+      function scheduleIdleDialogue() {
+        window.clearTimeout(idleDialogueTimer);
+        idleDialogueTimer = window.setTimeout(function () {
+          if (state.combo === 0) {
+            showDialogue(idleLines[idleDialogueIndex % idleLines.length]);
+            idleDialogueIndex += 1;
+            actionName.textContent = "等你来陪我";
+          }
+          scheduleIdleDialogue();
+        }, 12000);
+      }
+
+      function addFloat(reward, critical) {
+        var bubble = document.createElement("span");
+        bubble.className = "float-reward" + (critical ? " critical" : "");
+        bubble.textContent = "+" + formatValue(reward) + " 萌值";
+        bubble.style.left = (48 + Math.random() * 10) + "%";
+        petStage.appendChild(bubble);
+        window.setTimeout(function () { bubble.remove(); }, 1000);
+      }
+
+      function hit() {
+        var now = Date.now();
+        if (now - lastTapAt > COMBO_WINDOW) state.combo = 0;
+        state.combo += 1;
+        lastTapAt = now;
+        var reward = rewardFor(state.combo);
+        var reaction = reactions[(state.combo - 1) % reactions.length];
+        state.lastReward = reward;
+        state.total += reward;
+        saveTotal();
+        render();
+        addFloat(reward, state.combo >= 3);
+        showDialogue(state.combo === 3
+          ? "哇！第三下 ×100，送你 1,000 萌值！"
+          : reaction.lines[Math.floor(Math.random() * reaction.lines.length)]);
+        actionName.textContent = reaction.label;
+        bonkMark.textContent = reaction.mark;
+
+        petStage.classList.remove("is-hit");
+        void petStage.offsetWidth;
+        petStage.classList.add("is-hit");
+        petStage.dataset.action = reaction.key;
+        spriteArt.className = "sprite-art reaction-" + reaction.key;
+        window.clearTimeout(hitTimer);
+        window.clearTimeout(poseTimer);
+        hitTimer = window.setTimeout(function () { petStage.classList.remove("is-hit"); }, 640);
+        poseTimer = window.setTimeout(function () {
+          spriteArt.className = "sprite-art";
+          petStage.removeAttribute("data-action");
+          actionName.textContent = "安静待机中";
+        }, reaction.duration);
+        window.clearTimeout(fillTimer);
+        comboFill.style.transition = "none";
+        comboFill.style.width = "100%";
+        requestAnimationFrame(function () {
+          comboFill.style.transition = "width " + COMBO_WINDOW + "ms linear";
+          comboFill.style.width = "0%";
+        });
+        fillTimer = window.setTimeout(function () {
+          state.combo = 0;
+          lastTapAt = 0;
+          render();
+        }, COMBO_WINDOW);
+        scheduleIdleDialogue();
+      }
+
+      document.getElementById("headHit").addEventListener("click", hit);
+      document.getElementById("tapButton").addEventListener("click", hit);
+      document.getElementById("resetButton").addEventListener("click", function () {
+        if (!window.confirm("要把累计萌值清零吗？")) return;
+        state.total = 0n;
+        state.combo = 0;
+        state.lastReward = 1n;
+        lastTapAt = 0;
+        window.clearTimeout(fillTimer);
+        window.clearTimeout(poseTimer);
+        window.clearTimeout(hitTimer);
+        petStage.classList.remove("is-hit");
+        petStage.removeAttribute("data-action");
+        spriteArt.className = "sprite-art";
+        actionName.textContent = "安静待机中";
+        showDialogue("记录清空啦，我们重新开始吧～");
+        comboFill.style.transition = "none";
+        comboFill.style.width = "0%";
+        saveTotal();
+        render();
+        showToast("萌值记录已经清空");
+      });
+
+      readTotal();
+      render();
+      scheduleIdleDialogue();
+    }());
+  </script>
+</body>
+</html>
