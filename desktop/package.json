@@ -1,0 +1,16 @@
+{
+  "name": "qiqi-desktop-pet",
+  "productName": "淇淇桌宠",
+  "version": "1.0.0",
+  "private": true,
+  "description": "透明置顶的淇淇桌面陪伴，动画来自 assets/qiqi-spritesheet.webp。",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "node test/catalog.test.js",
+    "smoke": "electron test/smoke.js"
+  },
+  "devDependencies": {
+    "electron": "^33.4.11"
+  }
+}

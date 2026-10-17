@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f7edf1">
+  <title>淇淇桌宠</title>
+  <script>
+    document.documentElement.classList.add(window.qiqiDesktop ? "shell" : "preview");
+  </script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <p class="preview-banner">网页预览：右键淇淇打开菜单，拖拽她会留下爱心和樱花。透明置顶的桌面版请在 <code>desktop</code> 目录运行 <code>npm start</code>。</p>
+  <div id="stage">
+    <div class="fake-window" style="left:6%;top:8%;width:40%;height:46%">
+      <div class="fake-title">萌值小窝</div>
+      <div class="fake-body">轻轻敲一敲，萌值就会涨。</div>
+    </div>
+    <div class="fake-window" style="left:54%;top:16%;width:34%;height:40%">
+      <div class="fake-title">备忘录</div>
+      <div class="fake-body">今天也把淇淇放在桌面上。</div>
+    </div>
+    <canvas id="trail-layer"></canvas>
+    <div id="window">
+      <canvas id="sprite" aria-label="淇淇"></canvas>
+      <div id="speech" hidden></div>
+      <nav id="menu" hidden aria-label="淇淇菜单"></nav>
+    </div>
+    <div class="taskbar">
+      <span class="orb" aria-hidden="true">♡</span>
+      <span>淇淇的桌面</span>
+      <span id="status">安静待机</span>
+    </div>
+  </div>
+  <script src="catalog.js"></script>
+  <script src="trail.js"></script>
+  <script src="plugins.js"></script>
+  <script src="engine.js"></script>
+</body>
+</html>
