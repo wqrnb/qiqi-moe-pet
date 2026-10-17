@@ -50,7 +50,7 @@
         api.feet.x += this.dir * 78 * api.dt / 1000;
       }
       api.facing = this.dir < 0 ? -1 : 1;
-      api.setAction("walk");
+      api.setAction("taskbarWalk");
       this.leg += api.dt;
       if (this.leg > 16000) {
         this.leg = 0;
@@ -121,7 +121,7 @@
       if (api.moveToward(this.target.x, this.target.y, 96)) {
         this.phase = "pause";
         this.left = 1500 + Math.random() * 2200;
-        const choices = ["idle", "sit", "review", "wave", "wait"];
+        const choices = ["idle", "sit", "review", "read", "wave", "wait"];
         this.pauseAction = choices[Math.floor(Math.random() * choices.length)];
         api.setAction(this.pauseAction, { restart: true });
         if (Math.random() < 0.45) {
@@ -220,7 +220,7 @@
           this.phase = "sit";
           this.left = 5600;
           this.anchor = api.cursor();
-          api.setAction("settle", { restart: true });
+          api.setAction("perch", { restart: true });
           api.say("坐这儿刚刚好。");
         }
         return;
@@ -228,7 +228,7 @@
       if (this.phase === "sit") {
         this.left -= api.dt;
         const current = api.action();
-        if (current === "idle" || current === "walkLeft" || current === "walkRight") api.setAction("sit");
+        if (current === "idle" || current === "walkLeft" || current === "walkRight" || current === "taskbarWalk") api.setAction("perch");
         const cursor = api.cursor();
         const moved = this.anchor
           ? Math.hypot(cursor.x - this.anchor.x, cursor.y - this.anchor.y)
@@ -238,7 +238,7 @@
           this.phase = "chase";
           this.left = 6800;
           api.say("红点点，我来追！");
-          api.setAction("notice", { restart: true });
+          api.setAction("chase", { restart: true });
           return;
         }
         if (this.left <= 0) {
@@ -259,7 +259,7 @@
           x2: cursor.x,
           y2: cursor.y,
         });
-        const caught = api.moveToward(aimX, aimY, 250);
+        const caught = api.moveToward(aimX, aimY, 250, "chase");
         if (caught || this.left <= 0) {
           api.say(caught ? "抓到啦～" : "跑够啦。");
           api.setAction("jump", { restart: true });
@@ -271,7 +271,7 @@
       if (this.phase === "drop") {
         this.vy += 1900 * api.dt / 1000;
         api.feet.y += this.vy * api.dt / 1000;
-        api.setAction(this.vy < 0 ? "jump" : "fall");
+        api.setAction(this.vy < 0 ? "jump" : "parachute");
         if (api.feet.y >= floor) {
           api.feet.y = floor;
           this.vy = 0;
@@ -335,7 +335,7 @@
     update: function (api) {
       this.left -= api.dt;
       api.moveToward(this.targetX, this.targetY, 210);
-      if (this.left < 420) api.setAction("notice");
+      if (this.left < 420) api.setAction("gremlin");
       if (this.left <= 0) {
         this.phase = "idle";
         this.cooldownUntil = api.now + 28000 + Math.random() * 22000;

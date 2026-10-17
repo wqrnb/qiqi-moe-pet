@@ -140,7 +140,12 @@
       feet: { x: 160, y: 400 },
       facing: 1,
       vx: 1,
+      requestedId: "idle",
       actionId: "idle",
+      stem: null,
+      mirror: false,
+      readyStems: new Set(),
+      clipImages: {},
       actionSpeed: 1,
       actionLoop: true,
       frameIndex: 0,
@@ -212,7 +217,7 @@
       action: function () { return state.actionId; },
       setAction: setAction,
       setLaser: function (laser) { state.laser = laser; },
-      moveToward: function (x, y, speed) {
+      moveToward: function (x, y, speed, actionId) {
         const dx = x - state.feet.x;
         const dy = y - state.feet.y;
         const dist = Math.hypot(dx, dy);
@@ -225,32 +230,76 @@
         state.feet.y += dy / dist * step;
         state.vx = dx;
         state.facing = dx < 0 ? -1 : 1;
-        setAction("walk", { speed: speed > 160 ? 1.75 : 1 });
+        setAction(actionId || "walk", { speed: speed > 160 ? 1.75 : 1 });
         return false;
       },
     };
 
     function setAction(id, opts) {
       opts = opts || {};
-      let resolved = id === "walk" ? (state.facing < 0 ? "walkLeft" : "walkRight") : id;
-      const action = ACTIONS[resolved];
+      state.requestedId = id;
+      const playback = catalog.resolvePlayback(id, state.facing, state.readyStems);
+      const action = ACTIONS[playback.id];
       if (!action) return;
       const speed = opts.speed || 1;
       const loop = opts.loop != null ? opts.loop : !!action.loop;
-      if (!opts.restart && state.actionId === resolved) {
+      const stem = playback.stem || null;
+      const mirror = !!playback.mirror;
+      const same = !opts.restart
+        && state.actionId === playback.id
+        && state.stem === stem
+        && state.mirror === mirror;
+      if (same) {
         state.actionSpeed = speed;
         state.actionLoop = loop;
         return;
       }
-      state.actionId = resolved;
+      state.actionId = playback.id;
+      state.stem = stem;
+      state.mirror = mirror;
       state.actionSpeed = speed;
       state.actionLoop = loop;
       state.frameIndex = 0;
       state.frameElapsed = 0;
     }
 
+    function probeStem(stem) {
+      return new Promise(function (resolve) {
+        const images = [];
+        function step(index) {
+          if (index > catalog.MAX_SEQUENCE_FRAMES) {
+            resolve(images);
+            return;
+          }
+          const image = new Image();
+          image.onload = function () {
+            images.push(image);
+            step(index + 1);
+          };
+          image.onerror = function () { resolve(images); };
+          image.src = catalog.clipUrl(stem, index);
+        }
+        step(1);
+      });
+    }
+
+    function loadSequences() {
+      const stems = catalog.sequenceStems();
+      Promise.all(stems.map(function (stem) {
+        return probeStem(stem).then(function (images) { return { stem: stem, images: images }; });
+      })).then(function (loaded) {
+        loaded.forEach(function (item) {
+          if (!catalog.acceptSequence(item.images.length)) return;
+          state.clipImages[item.stem] = item.images;
+          state.readyStems.add(item.stem);
+        });
+        if (state.requestedId) setAction(state.requestedId, { restart: false });
+      });
+    }
+
     function playEmote(id, ms) {
-      const action = ACTIONS[id];
+      const playback = catalog.resolvePlayback(id, state.facing, state.readyStems);
+      const action = ACTIONS[playback.id];
       if (!action) return;
       const duration = ms || catalog.actionDuration(action);
       state.emote = {
@@ -363,6 +412,7 @@
           { action: "wait", label: "乖乖等待" },
           { action: "review", label: "认真看看" },
           { action: "sleep", label: "睡一会儿" },
+          { action: "read", label: "看看书" },
         ] },
         { title: "走动", items: [
           { toggle: "taskbar" },
@@ -370,7 +420,7 @@
           { toggle: "perch" },
           { command: "perch", label: "现在去栖窗" },
           { command: "chase", label: "追逐鼠标" },
-          { command: "drop", label: "跳回下面" },
+          { command: "drop", label: "降落伞落下" },
         ] },
         { title: "花样", items: [
           { toggle: "matrix" },
@@ -440,6 +490,11 @@
         say("那我眯一会儿。");
         return;
       }
+      if (name === "read") {
+        playEmote("read", 5200);
+        say("我看一会儿书。");
+        return;
+      }
       const perch = byId.perch;
       if (perch && (name === "perch" || name === "chase" || name === "drop")) {
         state.emote = null;
@@ -459,11 +514,18 @@
       buildMenu();
     }
 
+    function frameCount(action) {
+      if (state.stem && state.clipImages[state.stem]) return state.clipImages[state.stem].length;
+      if (action && action.frames) return action.frames.length;
+      return 1;
+    }
+
     function advance(dt) {
-      if (reduce || !sheetReady) return;
+      if (reduce) return;
       const action = ACTIONS[state.actionId];
       if (!action || action.src) return;
-      const frames = action.frames;
+      if (!state.stem && !sheetReady) return;
+      const total = frameCount(action);
       let ms = Array.isArray(action.frameMs)
         ? action.frameMs[Math.min(state.frameIndex, action.frameMs.length - 1)]
         : action.frameMs;
@@ -471,7 +533,7 @@
       state.frameElapsed += dt;
       if (state.frameElapsed < ms) return;
       state.frameElapsed = 0;
-      if (state.frameIndex < frames.length - 1) {
+      if (state.frameIndex < total - 1) {
         state.frameIndex += 1;
         return;
       }
@@ -485,7 +547,10 @@
     function drawMatrix(sx, sy) {
       offCtx.clearRect(0, 0, SHEET.frameWidth, SHEET.frameHeight);
       offCtx.drawImage(sheet, sx, sy, SHEET.frameWidth, SHEET.frameHeight, 0, 0, SHEET.frameWidth, SHEET.frameHeight);
-      const pixels = offCtx.getImageData(0, 0, SHEET.frameWidth, SHEET.frameHeight).data;
+      paintGlyphs(offCtx.getImageData(0, 0, SHEET.frameWidth, SHEET.frameHeight).data);
+    }
+
+    function paintGlyphs(pixels) {
       const cell = 6;
       const chars = "01アイウエオカキクケコ";
       const tick = Math.floor(state.now / 90);
@@ -529,12 +594,48 @@
         ctx.drawImage(extras.get(action.src), 0, 0, SPRITE_W, SPRITE_H);
         return;
       }
-      if (!sheetReady) return;
+      const sequence = state.stem && state.clipImages[state.stem];
+      if (sequence && sequence.length) {
+        drawSequence(sequence);
+        return;
+      }
+      if (!sheetReady || !action.frames) return;
       const column = action.frames[Math.min(state.frameIndex, action.frames.length - 1)];
       const sx = column * SHEET.frameWidth;
       const sy = (action.row || 0) * SHEET.frameHeight;
       if (state.settings.matrix) drawMatrix(sx, sy);
       else ctx.drawImage(sheet, sx, sy, SHEET.frameWidth, SHEET.frameHeight, 0, 0, SPRITE_W, SPRITE_H);
+    }
+
+    function drawSequence(images) {
+      const image = images[Math.min(state.frameIndex, images.length - 1)];
+      if (!image || !image.width) return;
+      const maxH = SPRITE_H * FOOT_Y;
+      const fit = Math.min(SPRITE_W / image.width, maxH / image.height);
+      const dw = image.width * fit;
+      const dh = image.height * fit;
+      const dx = (SPRITE_W - dw) / 2;
+      const dy = SPRITE_H * FOOT_Y - dh;
+      ctx.save();
+      if (state.mirror) {
+        ctx.translate(SPRITE_W, 0);
+        ctx.scale(-1, 1);
+      }
+      if (!state.settings.matrix) ctx.drawImage(image, dx, dy, dw, dh);
+      ctx.restore();
+      if (state.settings.matrix) drawMatrixImage(image);
+    }
+
+    function drawMatrixImage(image) {
+      offCtx.save();
+      offCtx.clearRect(0, 0, SHEET.frameWidth, SHEET.frameHeight);
+      if (state.mirror) {
+        offCtx.translate(SHEET.frameWidth, 0);
+        offCtx.scale(-1, 1);
+      }
+      offCtx.drawImage(image, 0, 0, SHEET.frameWidth, SHEET.frameHeight);
+      offCtx.restore();
+      paintGlyphs(offCtx.getImageData(0, 0, SHEET.frameWidth, SHEET.frameHeight).data);
     }
 
     function interruptPlugins() {
@@ -573,7 +674,7 @@
         if (owner && owner.update) owner.update(api);
         else if (ACTIONS[state.actionId] && !ACTIONS[state.actionId].loop) {
           /* hold the last one-shot frame until a mover replaces it */
-        } else if (state.actionId.indexOf("walk") === 0 || state.actionId === "fall" || state.actionId === "sit") {
+        } else if (state.actionId.indexOf("walk") === 0 || state.actionId === "taskbarWalk" || state.actionId === "chase" || state.actionId === "parachute" || state.actionId === "fall" || state.actionId === "sit" || state.actionId === "perch") {
           setAction("idle");
         }
         clampFeet();
@@ -697,6 +798,7 @@
     });
 
     placeHome();
+    loadSequences();
     refreshWindows();
     window.setInterval(refreshWindows, 1600);
     say("我来啦～");

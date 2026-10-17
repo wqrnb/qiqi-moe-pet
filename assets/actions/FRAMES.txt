@@ -1,0 +1,18 @@
+连帧放在这个目录。一张静帧不够，少于 4 张不会替换精灵图。
+
+必须和 assets/qiqi-spritesheet.webp 是同一个淇淇：
+同一张脸、圆框眼镜、粉色兔耳、粉白女仆裙，线的粗细和上色一致。
+背景透明。每一帧的画布一样大，脚靠近下边缘。编号从 01 连续排，中间不要缺号。
+
+qiqi_perch_01.png … qiqi_perch_08.png
+qiqi_chase_01.png … qiqi_chase_08.png
+qiqi_chase_left_01.png / qiqi_chase_right_01.png   （可选，左右各一套）
+qiqi_parachute_01.png … qiqi_parachute_08.png
+qiqi_gremlin_01.png … qiqi_gremlin_08.png
+qiqi_sleep_01.png … qiqi_sleep_08.png
+qiqi_read_01.png … qiqi_read_08.png
+qiqi_taskbar_01.png … qiqi_taskbar_08.png
+qiqi_taskbar_left_01.png / qiqi_taskbar_right_01.png   （可选）
+
+八帧是一套完整循环。四帧起才会用上，最多读到 24 张。
+没有这些文件时，桌宠继续播原来的精灵图。

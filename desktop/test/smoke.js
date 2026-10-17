@@ -9,6 +9,63 @@ app.commandLine.appendSwitch("enable-transparent-visuals");
 const outDir = process.env.QIQI_SMOKE_DIR || "/tmp/qiqi-smoke";
 fs.mkdirSync(outDir, { recursive: true });
 
+const actionDir = path.join(__dirname, "..", "..", "assets", "actions");
+const readFrames = [1, 2, 3, 4].map(function (index) {
+  return path.join(actionDir, "qiqi_read_" + String(index).padStart(2, "0") + ".png");
+});
+const readFramesAlreadyThere = readFrames.some(function (file) { return fs.existsSync(file); });
+
+function crc32(buf) {
+  let c = ~0;
+  for (let i = 0; i < buf.length; i += 1) {
+    c ^= buf[i];
+    for (let k = 0; k < 8; k += 1) c = (c >>> 1) ^ (0xedb88320 & -(c & 1));
+  }
+  return ~c >>> 0;
+}
+
+function chunk(type, data) {
+  const length = Buffer.alloc(4);
+  length.writeUInt32BE(data.length);
+  const body = Buffer.concat([Buffer.from(type), data]);
+  const crc = Buffer.alloc(4);
+  crc.writeUInt32BE(crc32(body));
+  return Buffer.concat([length, body, crc]);
+}
+
+function solidPng(size, red, green, blue) {
+  const zlib = require("zlib");
+  const row = Buffer.alloc(1 + size * 3);
+  for (let x = 0; x < size; x += 1) {
+    row[1 + x * 3] = red;
+    row[2 + x * 3] = green;
+    row[3 + x * 3] = blue;
+  }
+  const raw = Buffer.concat(Array.from({ length: size }, function () { return row; }));
+  const ihdr = Buffer.alloc(13);
+  ihdr.writeUInt32BE(size, 0);
+  ihdr.writeUInt32BE(size, 4);
+  ihdr[8] = 8;
+  ihdr[9] = 2;
+  return Buffer.concat([
+    Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]),
+    chunk("IHDR", ihdr),
+    chunk("IDAT", zlib.deflateSync(raw)),
+    chunk("IEND", Buffer.alloc(0)),
+  ]);
+}
+
+function writeReadFixtures() {
+  if (readFramesAlreadyThere) return;
+  const png = solidPng(16, 20, 40, 240);
+  readFrames.forEach(function (file) { fs.writeFileSync(file, png); });
+}
+
+function removeReadFixtures() {
+  if (readFramesAlreadyThere) return;
+  readFrames.forEach(function (file) { fs.rmSync(file, { force: true }); });
+}
+
 function fail(message) {
   console.error("SMOKE FAIL:", message);
   app.exit(1);
@@ -23,6 +80,7 @@ async function shot(win, name) {
 }
 
 app.whenReady().then(async () => {
+  writeReadFixtures();
   const errors = [];
   const preview = new BrowserWindow({
     width: 1180,
@@ -66,6 +124,23 @@ app.whenReady().then(async () => {
     return { hidden: menu.hidden, text: menu.innerText };
   })()`);
   await shot(preview, "menu.png");
+
+  const clip = await preview.webContents.executeJavaScript(`(() => {
+    const button = document.querySelector("#menu button[data-action='read']");
+    button.click();
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        const canvas = document.getElementById("sprite");
+        const ctx = canvas.getContext("2d");
+        const pixel = ctx.getImageData(Math.floor(canvas.width / 2), Math.floor(canvas.height * 0.42), 1, 1).data;
+        resolve({
+          status: document.getElementById("status").textContent,
+          r: pixel[0], g: pixel[1], b: pixel[2], a: pixel[3],
+        });
+      }, 500);
+    });
+  })()`);
+  await shot(preview, "read-clip.png");
 
   await preview.webContents.executeJavaScript(`(() => {
     const button = document.querySelector("#menu button[data-toggle='matrix']");
@@ -127,7 +202,7 @@ app.whenReady().then(async () => {
   })()`);
   await shot(scoreWin, "score.png");
 
-  const report = { walking, menu, matrix, trail, score, errors };
+  const report = { walking, menu, clip, matrix, trail, score, errors };
   fs.writeFileSync(path.join(outDir, "report.json"), JSON.stringify(report, null, 2));
   console.log(JSON.stringify(report, null, 2));
 
@@ -139,6 +214,11 @@ app.whenReady().then(async () => {
   if (!menu.text.includes("任务栏散步") || !menu.text.includes("小捣蛋模式") || !menu.text.includes("矩阵滤镜")) {
     problems.push("menu text missing");
   }
+  if (!menu.text.includes("看看书") || !menu.text.includes("降落伞落下")) problems.push("new action labels");
+  if (!readFramesAlreadyThere) {
+    if (clip.status !== "看书") problems.push("read status " + clip.status);
+    if (clip.b < 180 || clip.r > 80) problems.push("read clip pixels " + [clip.r, clip.g, clip.b, clip.a].join(","));
+  }
   if (!menu.text.includes("关") || menu.text.indexOf("小捣蛋") < 0) problems.push("gremlin label");
   if (matrix.pressed !== "true") problems.push("matrix not on");
   if (matrix.green < 10) problems.push("matrix glyphs " + matrix.green);
@@ -146,10 +226,12 @@ app.whenReady().then(async () => {
   if (score.total === "0") problems.push("score stayed 0");
   if (!score.link) problems.push("desktop link missing");
   if (errors.length) problems.push(errors.join(" | "));
+  removeReadFixtures();
   if (problems.length) fail(problems.join("; "));
   console.log("SMOKE OK");
   app.exit(0);
 }).catch((error) => {
+  removeReadFixtures();
   console.error(error);
   app.exit(1);
 });
