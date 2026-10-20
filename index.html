@@ -444,6 +444,8 @@
       .sprite-art { background-position: 0% 0%; animation: none !important; }
     }
   </style>
+  <link rel="preload" as="image" href="./assets/qiqi-spritesheet.webp">
+  <link rel="stylesheet" href="./interactions.css">
 </head>
 <body>
   <main class="page">
@@ -458,7 +460,7 @@
     <section class="intro" aria-labelledby="page-title">
       <div class="eyebrow">今日份的可爱补给</div>
       <h1 id="page-title">敲敲淇淇，<em>萌值加满。</em></h1>
-      <p class="subtitle">轻点她的脑袋，看她挥手、点头，偶尔开心地跳一下。连敲越多，萌值涨得越快。</p>
+      <p class="subtitle">轻敲、摸摸头，或者说句悄悄话。每一种回应，都是淇淇的小心情。</p>
     </section>
 
     <section class="layout" aria-label="淇淇萌值敲击区">
@@ -475,15 +477,23 @@
           <div class="pet-glow"></div>
           <div class="sprite-wrap">
             <div class="sprite-art" role="img" aria-label="淇淇：黑长发、圆框眼镜、粉白女仆裙和兔耳发饰"></div>
-            <button class="head-hit" id="headHit" type="button" aria-label="敲一下淇淇的脑袋，增加萌值" title="轻点淇淇的脑袋"></button>
+            <div class="emotion-art" id="emotionArt" aria-hidden="true"></div>
+            <button class="head-hit" id="headHit" type="button" aria-label="敲一下淇淇的脑袋，增加萌值" title="轻点敲脑袋，长按摸摸头"></button>
             <span class="bonk-mark" id="bonkMark" aria-hidden="true">啵！</span>
           </div>
-          <p class="under-pet">轻点脑袋，看看淇淇会怎么回应</p>
+          <p class="under-pet">轻点脑袋敲一下 · 长按可以摸摸头</p>
         </div>
         <button class="tap-cta" id="tapButton" type="button">
           <span aria-hidden="true">✦</span>
           <span>敲一下 <small id="tapRewardPreview">+1 萌值</small></span>
         </button>
+        <div class="interaction-grid" aria-label="和淇淇互动">
+          <button class="interaction-button" type="button" data-interact="pet"><span aria-hidden="true">♡</span>摸摸头</button>
+          <button class="interaction-button" type="button" data-interact="praise"><span aria-hidden="true">✧</span>夸夸她</button>
+          <button class="interaction-button" type="button" data-interact="play"><span aria-hidden="true">♫</span>陪她玩</button>
+          <button class="interaction-button" type="button" data-interact="talk"><span aria-hidden="true">☁</span>聊聊天</button>
+        </div>
+        <p class="interaction-tip">不着急，放着也会悄悄变萌。</p>
       </div>
 
       <div class="side">
@@ -509,6 +519,16 @@
           <div class="combo-track" aria-hidden="true"><div class="combo-fill" id="comboFill"></div></div>
         </section>
 
+        <section class="card companion-card" aria-label="相处与待机萌值">
+          <div class="bond-title"><span>和淇淇的默契</span><strong id="bondLevel">初见的小心动</strong></div>
+          <div class="bond-track" aria-hidden="true"><div class="bond-fill" id="bondFill"></div></div>
+          <p class="bond-note" id="bondNext">继续攒萌值，发现新的小表情。</p>
+          <div class="idle-status">
+            <span><strong>待机偷偷变萌 · 每 5 秒 +1</strong><small id="idleCountdown">再 5 秒，悄悄 +1 萌值</small></span>
+            <button class="idle-toggle" id="idleToggle" type="button" aria-pressed="true" aria-label="待机自动增加萌值">已开启</button>
+          </div>
+        </section>
+
         <section class="card rule-card" aria-labelledby="rule-heading">
           <div class="rule-head" id="rule-heading"><span aria-hidden="true">✧</span>连敲规则</div>
           <p class="rule-copy">
@@ -528,212 +548,42 @@
         </section>
       </div>
     </section>
+    <section class="card expression-album" id="expressionAlbum" aria-labelledby="albumTitle">
+      <div class="album-heading">
+        <div><h2 id="albumTitle">淇淇的小动作</h2><p>把可爱一点点攒起来。点选已解锁的小动作，让熟悉的淇淇陪着你。</p></div>
+        <button class="auto-mood" id="autoMood" type="button" aria-pressed="true">自由活动</button>
+      </div>
+      <div class="expression-grid">
+          <button class="expression-card" id="mood-shy" type="button" aria-pressed="false">
+            <span class="expression-preview" style="background-position:0.0% 50.0%;display:block" aria-hidden="true"></span>
+            <b>抱手撒娇</b><small>点击试试</small>
+          </button>
+          <button class="expression-card" id="mood-pout" type="button" aria-pressed="false">
+            <span class="expression-preview" style="background-position:100.0% 50.0%;display:block" aria-hidden="true"></span>
+            <b>小小委屈</b><small>点击试试</small>
+          </button>
+          <button class="expression-card" id="mood-wink" type="button" aria-pressed="false" disabled>
+            <span class="expression-preview" style="background-position:28.57142857142857% 0.0%;display:block" aria-hidden="true"></span>
+            <b>笑眯眯</b><small>1,000 萌值解锁</small>
+          </button>
+          <button class="expression-card" id="mood-sleepy" type="button" aria-pressed="false" disabled>
+            <span class="expression-preview" style="background-position:28.57142857142857% 80.0%;display:block" aria-hidden="true"></span>
+            <b>歪头想想</b><small>1万 萌值解锁</small>
+          </button>
+          <button class="expression-card" id="mood-heart" type="button" aria-pressed="false" disabled>
+            <span class="expression-preview" style="background-position:71.42857142857143% 60.0%;display:block" aria-hidden="true"></span>
+            <b>伸手抱抱</b><small>1亿 萌值解锁</small>
+          </button>
+          <button class="expression-card" id="mood-cheer" type="button" aria-pressed="false" disabled>
+            <span class="expression-preview" style="background-position:28.57142857142857% 30.0%;display:block" aria-hidden="true"></span>
+            <b>元气挥手</b><small>1兆 萌值解锁</small>
+          </button>
+      </div>
+    </section>
     <footer class="footer">给淇淇的每一下轻敲，都是一点点喜欢。</footer>
   </main>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-  <script>
-    (function () {
-      "use strict";
-      var STORAGE_KEY = "qiqi-moe-total-v1";
-      var COMBO_WINDOW = 1800;
-      var state = { total: 0n, combo: 0, lastReward: 1n };
-      var scoreTotal = document.getElementById("scoreTotal");
-      var multiplier = document.getElementById("multiplier");
-      var rewardValue = document.getElementById("rewardValue");
-      var comboStatus = document.getElementById("comboStatus");
-      var comboCount = document.getElementById("comboCount");
-      var comboFill = document.getElementById("comboFill");
-      var tapRewardPreview = document.getElementById("tapRewardPreview");
-      var petStage = document.getElementById("petStage");
-      var spriteArt = document.querySelector(".sprite-art");
-      var speechBubble = document.getElementById("speechBubble");
-      var speechText = document.getElementById("speechText");
-      var actionName = document.getElementById("actionName");
-      var bonkMark = document.getElementById("bonkMark");
-      var toast = document.getElementById("toast");
-      var lastTapAt = 0;
-      var fillTimer = 0;
-      var hitTimer = 0;
-      var poseTimer = 0;
-      var idleDialogueTimer = 0;
-      var toastTimer = 0;
-      var idleDialogueIndex = 0;
-      var idleLines = ["我把兔耳朵竖起来等你啦。", "要不要再陪我敲几下？", "今天也想收集一点点可爱。"];
-      var reactions = [
-        { key: "wave", label: "开心挥挥手", mark: "嗨！", duration: 700, lines: ["你来啦！我等你好久啦～", "轻轻一下，我收到啦！", "今天也一起玩吧～"] },
-        { key: "wait", label: "乖乖等你", mark: "嗯？", duration: 1010, lines: ["第二下收到！倍率变成十倍啦～", "我抱好脑袋，准备接住下一下！", "还想继续吗？我在这里等你～"] },
-        { key: "jump", label: "开心蹦一下", mark: "哇！", duration: 840, lines: ["哇！第三下 ×100，送你 1,000 萌值！", "这一下好厉害，我开心地蹦起来啦！", "×100 的萌值冲过来啦，接住！"] },
-        { key: "review", label: "认真接住萌值", mark: "叮！", duration: 1030, lines: ["这份萌值我会好好收起来～", "让我认真数数，已经涨好多啦！", "收到！我给你比一个小爱心。"] }
-      ];
-
-      function readTotal() {
-        try {
-          var saved = localStorage.getItem(STORAGE_KEY);
-          if (saved && /^\d+$/.test(saved)) state.total = BigInt(saved);
-        } catch (error) {
-          state.total = 0n;
-        }
-      }
-
-      function saveTotal() {
-        try { localStorage.setItem(STORAGE_KEY, state.total.toString()); }
-        catch (error) { showToast("浏览器暂时无法保存记录"); }
-      }
-
-      function superscript(value) {
-        var map = { "0":"⁰", "1":"¹", "2":"²", "3":"³", "4":"⁴", "5":"⁵", "6":"⁶", "7":"⁷", "8":"⁸", "9":"⁹" };
-        return String(value).split("").map(function (digit) { return map[digit] || digit; }).join("");
-      }
-
-      function formatValue(value) {
-        var units = ["", "万", "亿", "兆", "京", "垓", "秭", "穰", "沟", "涧", "正", "载"];
-        var digits = value.toString();
-        if (digits.length <= 4) return value.toLocaleString("zh-CN");
-        var group = Math.floor((digits.length - 1) / 4);
-        if (group < units.length) {
-          var scale = 10n ** BigInt(group * 4);
-          var whole = value / scale;
-          var fraction = (value % scale) * 100n / scale;
-          var decimals = fraction.toString().padStart(2, "0").replace(/0+$/, "");
-          return whole.toString() + (decimals ? "." + decimals : "") + units[group];
-        }
-        var significant = digits.slice(0, 3);
-        var mantissa = significant[0] + (significant.length > 1 ? "." + significant.slice(1).replace(/0+$/, "") : "");
-        return mantissa + "×10" + superscript(digits.length - 1);
-      }
-
-      function rewardFor(combo) {
-        if (combo === 1) return 1n;
-        if (combo === 2) return 10n;
-        return 10n ** BigInt(combo);
-      }
-
-      function multiplierFor(combo) {
-        return 10n ** BigInt(Math.max(0, combo - 1));
-      }
-
-      function render() {
-        scoreTotal.textContent = formatValue(state.total);
-        multiplier.textContent = "×" + formatValue(multiplierFor(Math.max(1, state.combo)));
-        rewardValue.textContent = "+" + formatValue(state.lastReward) + " 萌值";
-        tapRewardPreview.textContent = "+" + formatValue(rewardFor(state.combo + 1)) + " 萌值";
-        comboCount.textContent = "连敲 " + state.combo + " 次";
-        if (state.combo === 0) comboStatus.textContent = "准备好就敲敲淇淇";
-        else if (state.combo === 1) comboStatus.textContent = "第一下，淇淇收到啦";
-        else if (state.combo === 2) comboStatus.textContent = "连起来了，倍率 ×10";
-        else if (state.combo === 3) comboStatus.textContent = "萌值暴击！倍率 ×100";
-        else comboStatus.textContent = "连击不停，萌值飞涨";
-      }
-
-      function showToast(message) {
-        toast.textContent = message;
-        toast.classList.add("show");
-        window.clearTimeout(toastTimer);
-        toastTimer = window.setTimeout(function () { toast.classList.remove("show"); }, 1900);
-      }
-
-      function showDialogue(message) {
-        speechText.textContent = message;
-        speechBubble.classList.remove("pop");
-        void speechBubble.offsetWidth;
-        speechBubble.classList.add("pop");
-      }
-
-      function scheduleIdleDialogue() {
-        window.clearTimeout(idleDialogueTimer);
-        idleDialogueTimer = window.setTimeout(function () {
-          if (state.combo === 0) {
-            showDialogue(idleLines[idleDialogueIndex % idleLines.length]);
-            idleDialogueIndex += 1;
-            actionName.textContent = "等你来陪我";
-          }
-          scheduleIdleDialogue();
-        }, 12000);
-      }
-
-      function addFloat(reward, critical) {
-        var bubble = document.createElement("span");
-        bubble.className = "float-reward" + (critical ? " critical" : "");
-        bubble.textContent = "+" + formatValue(reward) + " 萌值";
-        bubble.style.left = (48 + Math.random() * 10) + "%";
-        petStage.appendChild(bubble);
-        window.setTimeout(function () { bubble.remove(); }, 1000);
-      }
-
-      function hit() {
-        var now = Date.now();
-        if (now - lastTapAt > COMBO_WINDOW) state.combo = 0;
-        state.combo += 1;
-        lastTapAt = now;
-        var reward = rewardFor(state.combo);
-        var reaction = reactions[(state.combo - 1) % reactions.length];
-        state.lastReward = reward;
-        state.total += reward;
-        saveTotal();
-        render();
-        addFloat(reward, state.combo >= 3);
-        showDialogue(state.combo === 3
-          ? "哇！第三下 ×100，送你 1,000 萌值！"
-          : reaction.lines[Math.floor(Math.random() * reaction.lines.length)]);
-        actionName.textContent = reaction.label;
-        bonkMark.textContent = reaction.mark;
-
-        petStage.classList.remove("is-hit");
-        void petStage.offsetWidth;
-        petStage.classList.add("is-hit");
-        petStage.dataset.action = reaction.key;
-        spriteArt.className = "sprite-art reaction-" + reaction.key;
-        window.clearTimeout(hitTimer);
-        window.clearTimeout(poseTimer);
-        hitTimer = window.setTimeout(function () { petStage.classList.remove("is-hit"); }, 640);
-        poseTimer = window.setTimeout(function () {
-          spriteArt.className = "sprite-art";
-          petStage.removeAttribute("data-action");
-          actionName.textContent = "安静待机中";
-        }, reaction.duration);
-        window.clearTimeout(fillTimer);
-        comboFill.style.transition = "none";
-        comboFill.style.width = "100%";
-        requestAnimationFrame(function () {
-          comboFill.style.transition = "width " + COMBO_WINDOW + "ms linear";
-          comboFill.style.width = "0%";
-        });
-        fillTimer = window.setTimeout(function () {
-          state.combo = 0;
-          lastTapAt = 0;
-          render();
-        }, COMBO_WINDOW);
-        scheduleIdleDialogue();
-      }
-
-      document.getElementById("headHit").addEventListener("click", hit);
-      document.getElementById("tapButton").addEventListener("click", hit);
-      document.getElementById("resetButton").addEventListener("click", function () {
-        if (!window.confirm("要把累计萌值清零吗？")) return;
-        state.total = 0n;
-        state.combo = 0;
-        state.lastReward = 1n;
-        lastTapAt = 0;
-        window.clearTimeout(fillTimer);
-        window.clearTimeout(poseTimer);
-        window.clearTimeout(hitTimer);
-        petStage.classList.remove("is-hit");
-        petStage.removeAttribute("data-action");
-        spriteArt.className = "sprite-art";
-        actionName.textContent = "安静待机中";
-        showDialogue("记录清空啦，我们重新开始吧～");
-        comboFill.style.transition = "none";
-        comboFill.style.width = "0%";
-        saveTotal();
-        render();
-        showToast("萌值记录已经清空");
-      });
-
-      readTotal();
-      render();
-      scheduleIdleDialogue();
-    }());
-  </script>
+  <script src="./app.js"></script>
 </body>
 </html>

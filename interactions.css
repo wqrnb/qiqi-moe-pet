@@ -1,0 +1,56 @@
+.sprite-art { animation: none; transition: opacity .16s ease; }
+.sprite-art.is-hidden { opacity: 0; }
+.emotion-art { position: absolute; left: 0; top: 0; width: 100%; height: 100%; background: url('./assets/qiqi-spritesheet.webp') no-repeat; background-size: 800% 1100%; opacity: 0; pointer-events: none; transition: opacity .16s ease; transform-origin: 50% 90%; }
+.emotion-art.visible { opacity: 1; animation: mood-breathe 2.8s ease-in-out infinite; }
+.pet-stage[data-action='pout'] .emotion-art { animation: mood-pout .65s ease both; }
+.pet-stage[data-action='cheer'] .emotion-art { animation: mood-cheer .8s ease both; }
+.pet-stage[data-action='right'] .sprite-wrap { animation: trot-right 1.05s ease-in-out both; }
+.pet-stage[data-action='left'] .sprite-wrap { animation: trot-left 1.05s ease-in-out both; }
+.pet-stage[data-action='busy'] .sprite-wrap { animation: pet-nod .82s ease both; }
+.pet-stage[data-action='failed'] .sprite-wrap { animation: mood-pout .8s ease both; }
+.pet-card { min-height: 640px; }
+.pet-stage { width: min(100%, 370px); min-height: 350px; }
+.under-pet { align-self: end; text-align: center; line-height: 1.6; }
+.interaction-grid { position: relative; z-index: 2; display: grid; grid-template-columns: repeat(4,1fr); width: min(100%, 352px); gap: 7px; margin-top: 15px; }
+.interaction-button { border: 1px solid #ecd4df; border-radius: 13px; background: #fff9fc; color: #95677e; padding: 10px 3px; font-size: 11px; cursor: pointer; transition: background .15s, transform .15s; }
+.interaction-button span { display: block; font-size: 19px; margin-bottom: 5px; }
+.interaction-button:hover { background: #fbe7ef; transform: translateY(-2px); }
+.interaction-button:focus-visible,.auto-mood:focus-visible,.expression-card:focus-visible,.idle-toggle:focus-visible { outline: 3px solid #cb81a1; outline-offset: 3px; }
+.interaction-tip { margin: 11px 0 0; color: #af92a2; font-size: 10px; }
+.side { grid-template-rows: auto auto auto; gap: 16px; }
+.companion-card { padding: 19px 25px; }
+.bond-title { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 12px; color: #9b7c8f; }
+.bond-title strong { padding: 5px 10px; border-radius: 9px; background: #f3eaf7; color: #9a729e; font-size: 11px; }
+.bond-track { margin-top: 12px; height: 5px; border-radius: 10px; background: #f0e5ec; overflow: hidden; }
+.bond-fill { height: 100%; width: 0; border-radius: inherit; background: linear-gradient(90deg,#e1a0bd,#a88abc); transition: width .4s; }
+.bond-note { min-height: 16px; margin: 8px 0 0; font-size: 10px; color: #ac8c9e; }
+.idle-status { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 15px; padding-top: 13px; border-top: 1px solid var(--line); }
+.idle-status strong { color: #9d6480; font-size: 11px; }
+.idle-status small { display: block; margin-top: 4px; color: #af92a2; font-size: 10px; }
+.idle-toggle { border: 1px solid #e6cad8; border-radius: 999px; background: #f8e6ef; color: #a3547a; cursor: pointer; font-size: 10px; padding: 6px 9px; }
+.idle-toggle[aria-pressed='false'] { background: #f3eef2; color: #a194a0; }
+.expression-album { margin-top: 21px; padding: 23px 25px; }
+.album-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.album-heading h2 { margin: 0; font-size: 16px; }
+.album-heading p { color: #a08395; font-size: 11px; line-height: 1.7; margin: 7px 0 0; }
+.auto-mood { flex: 0 0 auto; border: 1px solid #e4c8d7; border-radius: 999px; background: #fff7fb; color: #a16886; cursor: pointer; padding: 9px 12px; font-size: 11px; }
+.auto-mood[aria-pressed='true'] { background: #b86289; border-color: #b86289; color: #fff; }
+.expression-grid { display: grid; grid-template-columns: repeat(6,minmax(0,1fr)); gap: 10px; margin-top: 19px; }
+.expression-card { position: relative; border: 1px solid #eedbe5; border-radius: 18px; background: linear-gradient(155deg,#fffcfd,#f6edf4); color: #966b83; cursor: pointer; min-width: 0; padding: 8px 7px 13px; transition: transform .18s,border-color .18s; }
+.expression-card:not(:disabled):hover { transform: translateY(-3px); border-color: #ca91ad; }
+.expression-card[aria-pressed='true'] { border-color: #b86289; box-shadow: 0 0 0 2px #ebcddd; background: #ffeff7; }
+.expression-card:disabled { cursor: default; }
+.expression-preview { width: 100%; aspect-ratio: 192 / 208; background: url('./assets/qiqi-spritesheet.webp') no-repeat; background-size: 800% 1100%; }
+.expression-card:disabled .expression-preview { filter: grayscale(.85); opacity: .33; }
+.expression-card b { display: block; margin-top: 4px; font-size: 12px; }
+.expression-card small { display: block; min-height: 13px; margin-top: 5px; font-size: 9px; color: #b295a6; }
+.expression-card[aria-pressed='true'] small { color: #b86289; }
+.float-reward.idle { font-size: 17px; color: #a57cac; }
+@keyframes mood-breathe { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-3px) rotate(.5deg); } }
+@keyframes mood-pout { 0%,100% { transform: rotate(0); } 25% { transform: rotate(-2deg); } 65% { transform: rotate(2deg); } }
+@keyframes mood-cheer { 0%,100% { transform: translateY(0); } 45% { transform: translateY(-9px) scale(1.02); } }
+@keyframes trot-right { 0%,100% { transform: translateX(0); } 50% { transform: translateX(25px); } }
+@keyframes trot-left { 0%,100% { transform: translateX(0); } 50% { transform: translateX(-25px); } }
+@media(max-width:820px) { .side { grid-template-columns:1fr; } .pet-card { min-height:620px; } .expression-grid { grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; } .expression-preview { max-width:150px; margin:auto; } }
+@media(max-width:560px) { .pet-card { min-height:600px; } .pet-stage { min-height:315px; } .expression-album { padding:20px 15px; border-radius:23px; margin-top:14px; } .album-heading { align-items:start; } .album-heading h2 { font-size:14px; } .album-heading p { font-size:10px; } .auto-mood { padding:8px; font-size:10px; } .expression-grid { gap:7px; } .expression-card { padding:7px 3px 12px; border-radius:14px; } .expression-card b { font-size:11px; } .companion-card { padding:20px; } .interaction-grid { gap:6px; } }
+@media(prefers-reduced-motion:reduce) { .emotion-art.visible,.sprite-wrap { animation:none!important; } }
